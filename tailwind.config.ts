@@ -22,6 +22,7 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -57,6 +58,15 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      boxShadow: {
+        'glass-sm': 'var(--shadow-sm)',
+        'glass-md': 'var(--shadow-md)',
+        'glass-lg': 'var(--shadow-lg)',
+        'glow': 'var(--shadow-glow)',
+      },
+      backdropBlur: {
+        'glass': 'var(--blur-strength)',
       },
       borderRadius: {
         lg: "var(--radius)",
