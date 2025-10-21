@@ -17,7 +17,6 @@ interface LayoutProps {
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: FolderKanban, label: "Projects", path: "/projects" },
-  { icon: CheckSquare, label: "Kanban", path: "/kanban" },
   { icon: DollarSign, label: "Finances", path: "/finances" },
   { icon: Clock, label: "Time Tracker", path: "/time" },
   { icon: Settings, label: "Settings", path: "/settings" },

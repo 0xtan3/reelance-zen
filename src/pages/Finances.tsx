@@ -1,106 +1,46 @@
 import { DollarSign, TrendingUp, TrendingDown, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const financialStats = [
-  {
-    label: "Total Revenue",
-    value: "$18,750",
-    change: "+12.5%",
-    trend: "up",
-    color: "from-emerald-500 to-teal-500",
-  },
-  {
-    label: "Total Expenses",
-    value: "$6,300",
-    change: "-3.2%",
-    trend: "down",
-    color: "from-red-500 to-orange-500",
-  },
-  {
-    label: "Net Profit",
-    value: "$12,450",
-    change: "+18.7%",
-    trend: "up",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    label: "Profit Margin",
-    value: "66.4%",
-    change: "+4.1%",
-    trend: "up",
-    color: "from-purple-500 to-pink-500",
-  },
-];
-
-const recentTransactions = [
-  {
-    id: 1,
-    type: "income",
-    description: "E-commerce Redesign - Milestone 3",
-    amount: 3200,
-    date: "2025-04-10",
-    project: "E-commerce Redesign",
-  },
-  {
-    id: 2,
-    type: "expense",
-    description: "Adobe Creative Cloud Subscription",
-    amount: -52.99,
-    date: "2025-04-09",
-    project: null,
-  },
-  {
-    id: 3,
-    type: "income",
-    description: "Mobile App Development - Initial Payment",
-    amount: 5800,
-    date: "2025-04-08",
-    project: "Mobile App Development",
-  },
-  {
-    id: 4,
-    type: "expense",
-    description: "Figma Pro Subscription",
-    amount: -12,
-    date: "2025-04-07",
-    project: null,
-  },
-  {
-    id: 5,
-    type: "income",
-    description: "Brand Identity Package - Final Payment",
-    amount: 2100,
-    date: "2025-04-05",
-    project: "Brand Identity Package",
-  },
-];
-
-const projectFinances = [
-  {
-    project: "E-commerce Redesign",
-    revenue: 4000,
-    costs: 800,
-    profit: 3200,
-    margin: 80,
-  },
-  {
-    project: "Mobile App Development",
-    revenue: 6000,
-    costs: 200,
-    profit: 5800,
-    margin: 96.7,
-  },
-  {
-    project: "Brand Identity Package",
-    revenue: 2000,
-    costs: -100,
-    profit: 2100,
-    margin: 105,
-  },
-];
+import { useProjects } from "@/contexts/ProjectContext";
 
 export default function Finances() {
+  const { projects, expenses } = useProjects();
+
+  const totalRevenue = projects.reduce((sum, p) => sum + p.estimatedCost, 0);
+  const totalCosts = projects.reduce((sum, p) => sum + p.actualCost, 0);
+  const totalProfit = projects.reduce((sum, p) => sum + p.profit, 0);
+  const profitMargin = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : "0";
+
+  const financialStats = [
+    {
+      label: "Total Revenue",
+      value: `$${totalRevenue.toLocaleString()}`,
+      change: `${projects.length} projects`,
+      trend: "up",
+      color: "from-emerald-500 to-teal-500",
+    },
+    {
+      label: "Total Expenses",
+      value: `$${totalCosts.toLocaleString()}`,
+      change: `${expenses.length} expenses`,
+      trend: "down",
+      color: "from-red-500 to-orange-500",
+    },
+    {
+      label: "Net Profit",
+      value: `$${totalProfit.toLocaleString()}`,
+      change: "From all projects",
+      trend: "up",
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      label: "Profit Margin",
+      value: `${profitMargin}%`,
+      change: "Average margin",
+      trend: "up",
+      color: "from-purple-500 to-pink-500",
+    },
+  ];
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
@@ -156,87 +96,104 @@ export default function Finances() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Transactions */}
         <div className="glass-strong rounded-2xl p-6">
-          <h2 className="text-2xl font-bold mb-6">Recent Transactions</h2>
-          <div className="space-y-3">
-            {recentTransactions.map((transaction, index) => (
-              <div
-                key={transaction.id}
-                className="glass rounded-xl p-4 hover:shadow-glass-md transition-all duration-300 animate-in slide-in-from-left"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="font-medium mb-1">{transaction.description}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </span>
-                      {transaction.project && (
-                        <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {transaction.project}
-                        </span>
-                      )}
+          <h2 className="text-2xl font-bold mb-6">Recent Expenses</h2>
+          {expenses.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No expenses recorded yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {expenses.slice(0, 5).map((expense, index) => {
+                const project = expense.projectId
+                  ? projects.find(p => p.id === expense.projectId)
+                  : null;
+
+                return (
+                  <div
+                    key={expense.id}
+                    className="glass rounded-xl p-4 hover:shadow-glass-md transition-all duration-300 animate-in slide-in-from-left"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="font-medium mb-1">{expense.description}</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(expense.date).toLocaleDateString()}
+                          </span>
+                          {project && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                              {project.name}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-red-600 dark:text-red-400">
+                          -${Math.abs(expense.amount).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p
-                      className={`text-lg font-bold ${
-                        transaction.type === "income"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {transaction.type === "income" ? "+" : ""}$
-                      {Math.abs(transaction.amount).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Project Finances */}
         <div className="glass-strong rounded-2xl p-6">
           <h2 className="text-2xl font-bold mb-6">Project Breakdown</h2>
-          <div className="space-y-4">
-            {projectFinances.map((project, index) => (
-              <div
-                key={project.project}
-                className="glass rounded-xl p-4 animate-in slide-in-from-right"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">{project.project}</h3>
-                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                    ${project.profit.toLocaleString()}
-                  </span>
-                </div>
+          {projects.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No projects yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {projects.map((project, index) => {
+                const margin = project.estimatedCost > 0
+                  ? ((project.profit / project.estimatedCost) * 100).toFixed(1)
+                  : "0";
 
-                <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Revenue</p>
-                    <p className="font-medium">${project.revenue.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Costs</p>
-                    <p className="font-medium">${Math.abs(project.costs).toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Margin</p>
-                    <p className="font-medium">{project.margin.toFixed(1)}%</p>
-                  </div>
-                </div>
-
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                return (
                   <div
-                    className="h-full gradient-primary rounded-full transition-all duration-1000"
-                    style={{ width: `${Math.min(project.margin, 100)}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+                    key={project.id}
+                    className="glass rounded-xl p-4 animate-in slide-in-from-right"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold">{project.name}</h3>
+                      <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                        ${project.profit.toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Revenue</p>
+                        <p className="font-medium">${project.estimatedCost.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Costs</p>
+                        <p className="font-medium">${project.actualCost.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Margin</p>
+                        <p className="font-medium">{margin}%</p>
+                      </div>
+                    </div>
+
+                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className="h-full gradient-primary rounded-full transition-all duration-1000"
+                        style={{ width: `${Math.min(Number(margin), 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
