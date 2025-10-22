@@ -2,6 +2,7 @@ import { DollarSign, TrendingUp, Clock, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { useProjects } from "@/contexts/ProjectContext";
+import { WeeklyProgress } from "@/components/WeeklyProgress";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -139,6 +140,12 @@ export default function Dashboard() {
             })}
           </div>
         )}
+      </div>
+
+      {/* Weekly Progress */}
+      <div className="glass-strong rounded-2xl p-6">
+        <h2 className="text-2xl font-bold mb-6">Weekly Progress</h2>
+        <WeeklyProgress />
       </div>
 
       {/* Quick Actions */}

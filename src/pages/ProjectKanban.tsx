@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Plus, ArrowLeft } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useProjects } from "@/contexts/ProjectContext";
+import { useProjects, Task } from "@/contexts/ProjectContext";
+import { NewTaskDialog } from "@/components/NewTaskDialog";
 
 const columns = [
   { id: "todo", title: "To Do", color: "from-slate-500 to-gray-500" },
@@ -15,6 +17,8 @@ export default function ProjectKanban() {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { projects, tasks } = useProjects();
+  const [newTaskOpen, setNewTaskOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<Task["status"]>("todo");
 
   const project = projects.find(p => p.id === projectId);
   const projectTasks = tasks.filter(t => t.projectId === projectId);
@@ -34,7 +38,14 @@ export default function ProjectKanban() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <>
+      <NewTaskDialog 
+        open={newTaskOpen} 
+        onOpenChange={setNewTaskOpen} 
+        projectId={projectId!}
+        defaultStatus={selectedStatus}
+      />
+      <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div>
         <Button
@@ -50,7 +61,13 @@ export default function ProjectKanban() {
             <h1 className="text-4xl font-bold mb-2">{project.name}</h1>
             <p className="text-muted-foreground">{project.client} - Kanban Board</p>
           </div>
-          <Button className="gradient-primary shadow-glow hover:shadow-glow hover:scale-105 transition-all duration-300">
+          <Button 
+            onClick={() => {
+              setSelectedStatus("todo");
+              setNewTaskOpen(true);
+            }}
+            className="gradient-primary shadow-glow hover:shadow-glow hover:scale-105 transition-all duration-300"
+          >
             <Plus className="w-5 h-5 mr-2" />
             New Task
           </Button>
@@ -94,7 +111,13 @@ export default function ProjectKanban() {
           <p className="text-muted-foreground mb-6">
             Create your first task to get started with this project
           </p>
-          <Button className="gradient-primary shadow-glow">
+          <Button 
+            onClick={() => {
+              setSelectedStatus("todo");
+              setNewTaskOpen(true);
+            }}
+            className="gradient-primary shadow-glow"
+          >
             <Plus className="w-5 h-5 mr-2" />
             Create First Task
           </Button>
@@ -173,7 +196,13 @@ export default function ProjectKanban() {
                   ))}
 
                 {/* Add Task Button */}
-                <button className="w-full glass rounded-xl p-4 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-300 flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => {
+                    setSelectedStatus(column.id as Task["status"]);
+                    setNewTaskOpen(true);
+                  }}
+                  className="w-full glass rounded-xl p-4 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-300 flex items-center justify-center gap-2"
+                >
                   <Plus className="w-4 h-4" />
                   Add Task
                 </button>
@@ -182,6 +211,7 @@ export default function ProjectKanban() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
