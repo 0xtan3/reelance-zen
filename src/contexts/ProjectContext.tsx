@@ -15,6 +15,11 @@ export interface Project {
   notes?: string;
 }
 
+export interface WorkLog {
+  date: string;
+  hours: number;
+}
+
 export interface Task {
   id: string;
   projectId: string;
@@ -25,6 +30,7 @@ export interface Task {
   actualHours: number;
   dueDate: string;
   tags: string[];
+  workLogs: WorkLog[];
 }
 
 export interface Expense {
@@ -76,6 +82,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     const newTask = {
       ...task,
       id: Date.now().toString(),
+      workLogs: task.workLogs || [],
     };
     setTasks([...tasks, newTask]);
     

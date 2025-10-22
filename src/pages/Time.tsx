@@ -48,8 +48,23 @@ export default function Time() {
     }
 
     const hoursToAdd = time / 3600;
+    const today = new Date().toISOString().split("T")[0];
+    
+    // Update work logs
+    const existingLogs = selectedTask.workLogs || [];
+    const todayLog = existingLogs.find(log => log.date === today);
+    
+    const updatedLogs = todayLog
+      ? existingLogs.map(log => 
+          log.date === today 
+            ? { ...log, hours: log.hours + hoursToAdd }
+            : log
+        )
+      : [...existingLogs, { date: today, hours: hoursToAdd }];
+    
     updateTask(selectedTask.id, {
       actualHours: selectedTask.actualHours + hoursToAdd,
+      workLogs: updatedLogs,
     });
 
     toast.success(`Logged ${formatTime(time)} to ${selectedTask.title}`);

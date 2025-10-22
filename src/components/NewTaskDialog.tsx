@@ -45,6 +45,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "
       actualHours: 0,
       dueDate: formData.dueDate || new Date().toISOString().split("T")[0],
       tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
+      workLogs: [],
     });
 
     toast.success("Task created successfully!");

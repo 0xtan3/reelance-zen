@@ -15,12 +15,10 @@ export function WeeklyProgress() {
 
     return last7Days.map(date => {
       const dayName = new Date(date).toLocaleDateString("en-US", { weekday: "short" });
-      const hoursWorked = tasks
-        .filter(task => {
-          const taskDate = new Date(task.dueDate).toISOString().split("T")[0];
-          return taskDate === date && task.actualHours > 0;
-        })
-        .reduce((sum, task) => sum + task.actualHours, 0);
+      const hoursWorked = tasks.reduce((sum, task) => {
+        const logForDate = task.workLogs?.find(log => log.date === date);
+        return sum + (logForDate?.hours || 0);
+      }, 0);
 
       return {
         day: dayName,
