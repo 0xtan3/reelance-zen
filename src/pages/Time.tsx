@@ -39,57 +39,57 @@ export default function Time() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       <div>
         <h1 className="text-4xl font-bold mb-2">Time Tracker</h1>
         <p className="text-muted-foreground">Track your time across projects and tasks</p>
       </div>
 
       {/* Timer */}
-      <div className="glass-strong rounded-2xl p-8 text-center">
-        <div className="inline-flex items-center justify-center w-64 h-64 rounded-full glass mb-8 relative">
-          <div className="absolute inset-0 gradient-primary rounded-full opacity-20 animate-pulse" />
-          <div className="relative z-10">
-            <Clock className="w-12 h-12 mx-auto mb-4 text-primary" />
-            <p className="text-6xl font-bold font-mono">{formatTime(time)}</p>
+      <div className="glass-strong rounded-2xl p-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Clock className="w-6 h-6 text-primary" />
+            <div>
+              <p className="text-sm text-muted-foreground">Current Session</p>
+              <p className="text-xs text-muted-foreground">E-commerce Redesign</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-5xl font-bold font-mono tracking-tight">{formatTime(time)}</p>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             size="lg"
-            className={`${
+            className={`flex-1 ${
               isRunning
-                ? "bg-red-500 hover:bg-red-600"
+                ? "bg-destructive hover:bg-destructive/90"
                 : "gradient-primary"
-            } shadow-glow hover:shadow-glow hover:scale-105 transition-all duration-300`}
+            } transition-all duration-300`}
             onClick={() => setIsRunning(!isRunning)}
           >
             {isRunning ? (
               <>
                 <Pause className="w-5 h-5 mr-2" />
-                Pause
+                Pause Timer
               </>
             ) : (
               <>
                 <Play className="w-5 h-5 mr-2" />
-                Start
+                Start Timer
               </>
             )}
           </Button>
           <Button
             variant="outline"
             size="lg"
-            className="glass"
             onClick={() => setTime(0)}
           >
             Reset
           </Button>
         </div>
-
-        <p className="text-sm text-muted-foreground mt-4">
-          Working on: <span className="font-medium text-foreground">E-commerce Redesign</span>
-        </p>
       </div>
 
       {/* Recent Entries */}
