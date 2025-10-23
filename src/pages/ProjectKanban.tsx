@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCorners } from "@dnd-kit/core";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useProjects, Task } from "@/contexts/ProjectContext";
 import { NewTaskDialog } from "@/components/NewTaskDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const columns = [
   { id: "todo", title: "To Do", color: "from-slate-500 to-gray-500" },
@@ -17,10 +19,13 @@ const columns = [
 export default function ProjectKanban() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { projects, tasks, updateTask } = useProjects();
+  const { projects, tasks, updateTask, deleteTask } = useProjects();
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<Task["status"]>("todo");
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
 
   const project = projects.find(p => p.id === projectId);
   const projectTasks = tasks.filter(t => t.projectId === projectId);
@@ -51,6 +56,15 @@ export default function ProjectKanban() {
     setActiveTask(null);
   };
 
+  const handleDeleteTask = () => {
+    if (taskToDelete) {
+      deleteTask(taskToDelete.id);
+      toast.success("Task deleted successfully!");
+      setTaskToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
+
   if (!project) {
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
@@ -69,10 +83,31 @@ export default function ProjectKanban() {
     <>
       <NewTaskDialog 
         open={newTaskOpen} 
-        onOpenChange={setNewTaskOpen} 
+        onOpenChange={(open) => {
+          setNewTaskOpen(open);
+          if (!open) setEditingTask(null);
+        }} 
         projectId={projectId!}
         defaultStatus={selectedStatus}
+        task={editingTask || undefined}
       />
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="glass-strong">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{taskToDelete?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteTask} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <DndContext 
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
@@ -164,7 +199,16 @@ export default function ProjectKanban() {
                   tasks={projectTasks.filter((t) => t.status === column.id)}
                   onAddTask={() => {
                     setSelectedStatus(column.id as Task["status"]);
+                    setEditingTask(null);
                     setNewTaskOpen(true);
+                  }}
+                  onEditTask={(task) => {
+                    setEditingTask(task);
+                    setNewTaskOpen(true);
+                  }}
+                  onDeleteTask={(task) => {
+                    setTaskToDelete(task);
+                    setDeleteDialogOpen(true);
                   }}
                   colIndex={colIndex}
                 />
@@ -175,7 +219,7 @@ export default function ProjectKanban() {
 
         <DragOverlay>
           {activeTask && (
-            <TaskCard task={activeTask} isDragging />
+            <TaskCard task={activeTask} isDragging onEdit={() => {}} onDelete={() => {}} />
           )}
         </DragOverlay>
       </DndContext>
@@ -187,12 +231,16 @@ export default function ProjectKanban() {
 function KanbanColumn({ 
   column, 
   tasks, 
-  onAddTask, 
+  onAddTask,
+  onEditTask,
+  onDeleteTask,
   colIndex 
 }: { 
   column: typeof columns[0]; 
   tasks: Task[]; 
   onAddTask: () => void;
+  onEditTask: (task: Task) => void;
+  onDeleteTask: (task: Task) => void;
   colIndex: number;
 }) {
   return (
@@ -218,7 +266,13 @@ function KanbanColumn({
         data-column={column.id}
       >
         {tasks.map((task, taskIndex) => (
-          <DraggableTask key={task.id} task={task} taskIndex={taskIndex} />
+          <DraggableTask 
+            key={task.id} 
+            task={task} 
+            taskIndex={taskIndex}
+            onEdit={onEditTask}
+            onDelete={onDeleteTask}
+          />
         ))}
 
         {/* Add Task Button */}
@@ -235,7 +289,17 @@ function KanbanColumn({
 }
 
 // Draggable task component
-function DraggableTask({ task, taskIndex }: { task: Task; taskIndex: number }) {
+function DraggableTask({ 
+  task, 
+  taskIndex, 
+  onEdit, 
+  onDelete 
+}: { 
+  task: Task; 
+  taskIndex: number;
+  onEdit: (task: Task) => void;
+  onDelete: (task: Task) => void;
+}) {
   const [isDragging, setIsDragging] = useState(false);
   const { updateTask } = useProjects();
 
@@ -264,13 +328,28 @@ function DraggableTask({ task, taskIndex }: { task: Task; taskIndex: number }) {
       }}
       className={`transition-opacity ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
-      <TaskCard task={task} isDragging={isDragging} />
+      <TaskCard 
+        task={task} 
+        isDragging={isDragging}
+        onEdit={() => onEdit(task)}
+        onDelete={() => onDelete(task)}
+      />
     </div>
   );
 }
 
 // Task card component
-function TaskCard({ task, isDragging = false }: { task: Task; isDragging?: boolean }) {
+function TaskCard({ 
+  task, 
+  isDragging = false,
+  onEdit,
+  onDelete
+}: { 
+  task: Task; 
+  isDragging?: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const column = columns.find(c => c.id === task.status);
   
   return (
@@ -279,11 +358,35 @@ function TaskCard({ task, isDragging = false }: { task: Task; isDragging?: boole
         isDragging ? 'opacity-50 rotate-3 scale-105' : ''
       }`}
     >
-      {/* Task Header */}
+      {/* Task Header with Actions */}
       <div className="mb-3">
-        <h4 className="font-semibold mb-1 group-hover:text-primary transition-colors">
-          {task.title}
-        </h4>
+        <div className="flex items-start justify-between mb-1">
+          <h4 className="font-semibold group-hover:text-primary transition-colors flex-1">
+            {task.title}
+          </h4>
+          <div className="flex gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="p-1 hover:bg-secondary rounded transition-colors"
+              title="Edit task"
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="p-1 hover:bg-destructive/20 text-destructive rounded transition-colors"
+              title="Delete task"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
         <p className="text-xs text-muted-foreground line-clamp-2">
           {task.description}
         </p>
@@ -306,7 +409,7 @@ function TaskCard({ task, isDragging = false }: { task: Task; isDragging?: boole
       {/* Task Footer */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <span>⏱️ {task.actualHours.toFixed(2)}h / {task.estimatedHours.toFixed(2)}h</span>
+          <span>⏱️ {task.actualHours.toFixed(1)} / {task.estimatedHours.toFixed(1)}h</span>
         </div>
         <span>📅 {new Date(task.dueDate).toLocaleDateString()}</span>
       </div>

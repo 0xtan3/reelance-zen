@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,10 +13,11 @@ interface NewTaskDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   defaultStatus?: Task["status"];
+  task?: Task;
 }
 
-export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "todo" }: NewTaskDialogProps) {
-  const { addTask } = useProjects();
+export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "todo", task }: NewTaskDialogProps) {
+  const { addTask, updateTask } = useProjects();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -25,6 +26,28 @@ export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "
     dueDate: "",
     tags: "",
   });
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        estimatedHours: task.estimatedHours.toString(),
+        dueDate: task.dueDate,
+        tags: task.tags.join(", "),
+      });
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        status: defaultStatus,
+        estimatedHours: "",
+        dueDate: "",
+        tags: "",
+      });
+    }
+  }, [task, defaultStatus]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,19 +59,31 @@ export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "
 
     const estimatedHours = parseFloat(formData.estimatedHours) || 0;
 
-    addTask({
-      projectId,
-      title: formData.title,
-      description: formData.description,
-      status: formData.status as Task["status"],
-      estimatedHours,
-      actualHours: 0,
-      dueDate: formData.dueDate || new Date().toISOString().split("T")[0],
-      tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
-      workLogs: [],
-    });
+    if (task) {
+      updateTask(task.id, {
+        title: formData.title,
+        description: formData.description,
+        status: formData.status as Task["status"],
+        estimatedHours,
+        dueDate: formData.dueDate || new Date().toISOString().split("T")[0],
+        tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
+      });
+      toast.success("Task updated successfully!");
+    } else {
+      addTask({
+        projectId,
+        title: formData.title,
+        description: formData.description,
+        status: formData.status as Task["status"],
+        estimatedHours,
+        actualHours: 0,
+        dueDate: formData.dueDate || new Date().toISOString().split("T")[0],
+        tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
+        workLogs: [],
+      });
+      toast.success("Task created successfully!");
+    }
 
-    toast.success("Task created successfully!");
     onOpenChange(false);
     setFormData({
       title: "",
@@ -64,7 +99,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="glass-strong max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>{task ? "Edit Task" : "Create New Task"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -143,7 +178,7 @@ export function NewTaskDialog({ open, onOpenChange, projectId, defaultStatus = "
               Cancel
             </Button>
             <Button type="submit" className="gradient-primary">
-              Create Task
+              {task ? "Update Task" : "Create Task"}
             </Button>
           </DialogFooter>
         </form>
