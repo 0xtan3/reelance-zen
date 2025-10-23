@@ -94,7 +94,7 @@ export default function Projects() {
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">Hours</p>
                       <p className="text-sm font-bold">
-                        {project.actualHours} / {project.estimatedHours}
+                        {project.actualHours.toFixed(2)} / {project.estimatedHours.toFixed(2)}
                       </p>
                     </div>
                     <div>

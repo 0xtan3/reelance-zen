@@ -29,7 +29,7 @@ export default function Dashboard() {
     },
     {
       label: "Total Hours",
-      value: totalHours.toString(),
+      value: totalHours.toFixed(2),
       change: `${tasks.length} tasks`,
       icon: Clock,
       gradient: "from-purple-500 to-pink-500",

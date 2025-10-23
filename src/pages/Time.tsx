@@ -83,7 +83,7 @@ export default function Time() {
           id: task.id,
           task: task.title,
           project: project?.name || "Unknown",
-          duration: `${task.actualHours.toFixed(1)}h`,
+          duration: `${task.actualHours.toFixed(2)}h`,
           date: task.dueDate,
         };
       });

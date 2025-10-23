@@ -57,25 +57,43 @@ interface ProjectContextType {
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  // Load initial state from localStorage
+  const [projects, setProjects] = useState<Project[]>(() => {
+    const saved = localStorage.getItem('projectflow-projects');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const saved = localStorage.getItem('projectflow-tasks');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    const saved = localStorage.getItem('projectflow-expenses');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const addProject = (project: Omit<Project, "id">) => {
     const newProject = {
       ...project,
       id: Date.now().toString(),
     };
-    setProjects([...projects, newProject]);
+    const updatedProjects = [...projects, newProject];
+    setProjects(updatedProjects);
+    localStorage.setItem('projectflow-projects', JSON.stringify(updatedProjects));
   };
 
   const updateProject = (id: string, updates: Partial<Project>) => {
-    setProjects(projects.map(p => p.id === id ? { ...p, ...updates } : p));
+    const updatedProjects = projects.map(p => p.id === id ? { ...p, ...updates } : p);
+    setProjects(updatedProjects);
+    localStorage.setItem('projectflow-projects', JSON.stringify(updatedProjects));
   };
 
   const deleteProject = (id: string) => {
-    setProjects(projects.filter(p => p.id !== id));
-    setTasks(tasks.filter(t => t.projectId !== id));
+    const updatedProjects = projects.filter(p => p.id !== id);
+    const updatedTasks = tasks.filter(t => t.projectId !== id);
+    setProjects(updatedProjects);
+    setTasks(updatedTasks);
+    localStorage.setItem('projectflow-projects', JSON.stringify(updatedProjects));
+    localStorage.setItem('projectflow-tasks', JSON.stringify(updatedTasks));
   };
 
   const addTask = (task: Omit<Task, "id">) => {
@@ -84,7 +102,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       id: Date.now().toString(),
       workLogs: task.workLogs || [],
     };
-    setTasks([...tasks, newTask]);
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+    localStorage.setItem('projectflow-tasks', JSON.stringify(updatedTasks));
     
     // Update project actual hours
     const project = projects.find(p => p.id === task.projectId);
@@ -97,7 +117,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   const updateTask = (id: string, updates: Partial<Task>) => {
     const oldTask = tasks.find(t => t.id === id);
-    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+    const updatedTasks = tasks.map(t => t.id === id ? { ...t, ...updates } : t);
+    setTasks(updatedTasks);
+    localStorage.setItem('projectflow-tasks', JSON.stringify(updatedTasks));
     
     // Update project hours if actualHours changed
     if (oldTask && updates.actualHours !== undefined) {
@@ -112,7 +134,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteTask = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id));
+    const updatedTasks = tasks.filter(t => t.id !== id);
+    setTasks(updatedTasks);
+    localStorage.setItem('projectflow-tasks', JSON.stringify(updatedTasks));
   };
 
   const addExpense = (expense: Omit<Expense, "id">) => {
@@ -120,7 +144,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       ...expense,
       id: Date.now().toString(),
     };
-    setExpenses([...expenses, newExpense]);
+    const updatedExpenses = [...expenses, newExpense];
+    setExpenses(updatedExpenses);
+    localStorage.setItem('projectflow-expenses', JSON.stringify(updatedExpenses));
     
     // Update project costs if expense is linked to a project
     if (expense.projectId) {
