@@ -1,11 +1,12 @@
 import { useMemo } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   FolderKanban, 
   DollarSign,
   Clock,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -19,6 +20,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useProjects } from "@/contexts/ProjectContext";
+import { useAuthStore } from "@/stores/authStore";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -31,7 +34,9 @@ const navItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { tasks } = useProjects();
+  const { user, logout } = useAuthStore();
 
   const weeklyProgress = useMemo(() => {
     const today = new Date();
@@ -125,6 +130,30 @@ export function AppSidebar() {
             </div>
           </div>
         )}
+
+        {/* Sign Out Button */}
+        <div className="p-4 border-t border-border/50">
+          {user && (
+            <>
+              {!isCollapsed && (
+                <p className="text-xs text-muted-foreground mb-2 px-2">
+                  {user.name}
+                </p>
+              )}
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={async () => {
+                  await logout();
+                  navigate("/auth");
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                {!isCollapsed && <span className="ml-2">Sign Out</span>}
+              </Button>
+            </>
+          )}
+        </div>
       </SidebarContent>
     </Sidebar>
   );

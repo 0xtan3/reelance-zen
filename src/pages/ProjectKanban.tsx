@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { Plus, ArrowLeft, Pencil, Trash2, MessageSquare } from "lucide-react";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, closestCorners } from "@dnd-kit/core";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { useProjects, Task } from "@/contexts/ProjectContext";
 import { NewTaskDialog } from "@/components/NewTaskDialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import ProjectChat from "@/components/ProjectChat";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const columns = [
   { id: "todo", title: "To Do", color: "from-slate-500 to-gray-500" },
@@ -173,48 +175,64 @@ export default function ProjectKanban() {
           </div>
 
           {/* Kanban Columns */}
-          {projectTasks.length === 0 ? (
-            <div className="glass-strong rounded-2xl p-12 text-center">
-              <h3 className="text-2xl font-bold mb-2">No Tasks Yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Create your first task to get started with this project
-              </p>
-              <Button 
-                onClick={() => {
-                  setSelectedStatus("todo");
-                  setNewTaskOpen(true);
-                }}
-                className="gradient-primary shadow-glow"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                Create First Task
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {columns.map((column, colIndex) => (
-                <KanbanColumn
-                  key={column.id}
-                  column={column}
-                  tasks={projectTasks.filter((t) => t.status === column.id)}
-                  onAddTask={() => {
-                    setSelectedStatus(column.id as Task["status"]);
-                    setEditingTask(null);
-                    setNewTaskOpen(true);
-                  }}
-                  onEditTask={(task) => {
-                    setEditingTask(task);
-                    setNewTaskOpen(true);
-                  }}
-                  onDeleteTask={(task) => {
-                    setTaskToDelete(task);
-                    setDeleteDialogOpen(true);
-                  }}
-                  colIndex={colIndex}
-                />
-              ))}
-            </div>
-          )}
+          <Tabs defaultValue="kanban" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+              <TabsTrigger value="kanban">Kanban Board</TabsTrigger>
+              <TabsTrigger value="chat">
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Team Chat
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="kanban">
+              {projectTasks.length === 0 ? (
+                <div className="glass-strong rounded-2xl p-12 text-center">
+                  <h3 className="text-2xl font-bold mb-2">No Tasks Yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Create your first task to get started with this project
+                  </p>
+                  <Button 
+                    onClick={() => {
+                      setSelectedStatus("todo");
+                      setNewTaskOpen(true);
+                    }}
+                    className="gradient-primary shadow-glow"
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create First Task
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                  {columns.map((column, colIndex) => (
+                    <KanbanColumn
+                      key={column.id}
+                      column={column}
+                      tasks={projectTasks.filter((t) => t.status === column.id)}
+                      onAddTask={() => {
+                        setSelectedStatus(column.id as Task["status"]);
+                        setEditingTask(null);
+                        setNewTaskOpen(true);
+                      }}
+                      onEditTask={(task) => {
+                        setEditingTask(task);
+                        setNewTaskOpen(true);
+                      }}
+                      onDeleteTask={(task) => {
+                        setTaskToDelete(task);
+                        setDeleteDialogOpen(true);
+                      }}
+                      colIndex={colIndex}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="chat">
+              <ProjectChat projectId={projectId!} />
+            </TabsContent>
+          </Tabs>
         </div>
 
         <DragOverlay>
