@@ -142,7 +142,7 @@ export function AppSidebar() {
               )}
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className={cn("w-full", isCollapsed ? "justify-center px-2" : "justify-start")}
                 onClick={async () => {
                   await logout();
                   navigate("/auth");

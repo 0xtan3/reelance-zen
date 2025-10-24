@@ -1,19 +1,64 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Eye } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useProjects } from "@/contexts/ProjectContext";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function Projects() {
   const navigate = useNavigate();
-  const { projects } = useProjects();
+  const { projects, deleteProject } = useProjects();
   const [newProjectOpen, setNewProjectOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+
+  const handleDeleteClick = (e: React.MouseEvent, projectId: string) => {
+    e.stopPropagation();
+    setProjectToDelete(projectId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (projectToDelete) {
+      deleteProject(projectToDelete);
+      toast.success("Project deleted successfully");
+      setProjectToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
 
   return (
     <>
       <NewProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} />
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this project? This action cannot be undone.
+              All tasks and data associated with this project will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="space-y-8 animate-in fade-in duration-500">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -56,9 +101,19 @@ export default function Projects() {
                 <Card
                   key={project.id}
                   onClick={() => navigate(`/projects/${project.id}/kanban`)}
-                  className="glass-strong p-6 hover:shadow-glow transition-all duration-300 cursor-pointer group animate-in slide-in-from-bottom"
+                  className="glass-strong p-6 hover:shadow-glow transition-all duration-300 cursor-pointer group animate-in slide-in-from-bottom relative"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+                  {/* Delete Button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => handleDeleteClick(e, project.id)}
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
