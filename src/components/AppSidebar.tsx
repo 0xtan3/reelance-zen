@@ -67,13 +67,13 @@ export function AppSidebar() {
           {!isCollapsed ? (
             <>
               <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-                ProjectFlow
+                Tenazity
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Freelance Manager</p>
             </>
           ) : (
             <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-              PF
+              TZ
             </h1>
           )}
         </div>
