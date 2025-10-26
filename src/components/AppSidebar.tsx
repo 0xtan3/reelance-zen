@@ -67,13 +67,13 @@ export function AppSidebar() {
           {!isCollapsed ? (
             <>
               <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-                Propulse
+                Propulze
               </h1>
               <p className="text-sm text-muted-foreground mt-1">a Tenazity product</p>
             </>
           ) : (
             <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-              Propulse
+              Propulze
             </h1>
           )}
         </div>
