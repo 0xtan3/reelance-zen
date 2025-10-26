@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TeamManagement } from "@/components/TeamManagement";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -9,9 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/authStore";
+import { LogOut } from "lucide-react";
 
 export default function Settings() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
   const [hourlyRate, setHourlyRate] = useState(() => {
     return localStorage.getItem('hourlyRate') || '50';
   });
@@ -84,6 +87,24 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground">
                 Profile information is managed through your authentication provider.
               </p>
+              <Separator className="my-6" />
+              <div>
+                <Label>Account Actions</Label>
+                <p className="text-sm text-muted-foreground mt-1 mb-3">
+                  Sign out from your account
+                </p>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    await logout();
+                    navigate("/auth");
+                    toast.success("Signed out successfully");
+                  }}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
             </div>
           </Card>
         </TabsContent>

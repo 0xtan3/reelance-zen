@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Trash2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Plus, Trash2, Calendar, Clock, DollarSign, TrendingUp } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useProjects } from "@/contexts/ProjectContext";
 import { NewProjectDialog } from "@/components/NewProjectDialog";
 import {
@@ -91,7 +92,7 @@ export default function Projects() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {projects.map((project, index) => {
               const progress = project.estimatedHours > 0
                 ? Math.round((project.actualHours / project.estimatedHours) * 100)
@@ -100,85 +101,99 @@ export default function Projects() {
               return (
                 <Card
                   key={project.id}
+                  className="group overflow-hidden border-border/50 hover:border-primary/50 transition-all duration-300 cursor-pointer animate-in fade-in slide-in-from-bottom"
+                  style={{ animationDelay: `${index * 50}ms` }}
                   onClick={() => navigate(`/projects/${project.id}/kanban`)}
-                  className="glass-strong p-6 hover:shadow-glow transition-all duration-300 cursor-pointer group animate-in slide-in-from-bottom relative"
-                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  {/* Delete Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => handleDeleteClick(e, project.id)}
-                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  {/* Header with gradient */}
+                  <div className={`h-24 bg-gradient-to-br ${project.color} relative`}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => handleDeleteClick(e, project.id)}
+                      className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <div className="absolute -bottom-8 left-6">
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${project.color} shadow-xl flex items-center justify-center border-4 border-background`}>
+                        <span className="text-white font-bold text-2xl">
+                          {project.name.charAt(0)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">
+                  <CardContent className="pt-12 pb-6 px-6 space-y-4">
+                    {/* Title and Client */}
+                    <div>
+                      <h3 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors line-clamp-1">
                         {project.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground">{project.client}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-1">{project.client}</p>
                     </div>
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${project.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      <span className="text-white font-bold text-lg">
-                        {project.name.charAt(0)}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Tags */}
-                  <div className="flex gap-2 mb-4">
-                    {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary font-medium"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    <span className="text-xs px-3 py-1 rounded-full bg-secondary text-secondary-foreground font-medium">
-                      {project.status}
-                    </span>
-                  </div>
+                    {/* Tags and Status */}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {project.status}
+                      </Badge>
+                      {project.tags.slice(0, 2).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {project.tags.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{project.tags.length - 2}
+                        </Badge>
+                      )}
+                    </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Hours</p>
-                      <p className="text-sm font-bold">
-                        {project.actualHours.toFixed(2)} / {project.estimatedHours.toFixed(2)}
-                      </p>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Hours</p>
+                          <p className="text-sm font-semibold">{project.actualHours.toFixed(0)}h</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Cost</p>
+                          <p className="text-sm font-semibold">${(project.actualCost / 1000).toFixed(1)}k</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Profit</p>
+                          <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                            ${(project.profit / 1000).toFixed(1)}k
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Progress</p>
+                          <p className="text-sm font-semibold">{progress}%</p>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Cost</p>
-                      <p className="text-sm font-bold">
-                        ${project.actualCost.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Profit</p>
-                      <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                        ${project.profit.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium">{progress}%</span>
+                    {/* Progress Bar */}
+                    <div className="pt-2">
+                      <div className="h-1.5 bg-secondary/50 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full bg-gradient-to-r ${project.color} transition-all duration-1000`}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                      <div
-                        className={`h-full bg-gradient-to-r ${project.color} rounded-full transition-all duration-1000`}
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                  </div>
+                  </CardContent>
                 </Card>
               );
             })}
