@@ -53,7 +53,7 @@ export default function Auth() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md p-8 glass-strong">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Project Manager</h1>
+          <h1 className="text-3xl font-bold mb-2">Propulze</h1>
           <p className="text-muted-foreground">Sign in to collaborate with your team</p>
         </div>
 
