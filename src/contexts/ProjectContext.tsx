@@ -1,5 +1,14 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
+export interface ProjectSupport {
+  maintenanceMonths: number;
+  maintenanceEndDate: string;
+  hostingYears: number;
+  hostingEndDate: string;
+  sslIncluded: boolean;
+  backupsEnabled: boolean;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -13,6 +22,9 @@ export interface Project {
   status: string;
   color: string;
   notes?: string;
+  support?: ProjectSupport;
+  createdBy: string;
+  teamId?: string;
 }
 
 export interface WorkLog {

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuthStore } from "@/stores/authStore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ interface NewProjectDialogProps {
 
 export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) {
   const { addProject } = useProjects();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     name: "",
     client: "",
@@ -46,6 +48,8 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
       status: "Active",
       color: `hsl(${Math.random() * 360}, 70%, 50%)`,
       notes: formData.notes,
+      createdBy: user?.$id || 'anonymous',
+      teamId: localStorage.getItem('currentTeamId') || undefined,
     });
 
     toast.success("Project created successfully!");
