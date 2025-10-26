@@ -97,6 +97,14 @@ export default function Projects() {
               const progress = project.estimatedHours > 0
                 ? Math.round((project.actualHours / project.estimatedHours) * 100)
                 : 0;
+              const statusColor =
+                project.status?.toLowerCase() === "active" ? "bg-emerald-500" :
+                project.status?.toLowerCase() === "in progress" ? "bg-sky-500" :
+                project.status?.toLowerCase() === "completed" ? "bg-emerald-600" :
+                project.status?.toLowerCase() === "on hold" ? "bg-amber-500" :
+                project.status?.toLowerCase() === "paused" ? "bg-amber-500" :
+                project.status?.toLowerCase() === "blocked" ? "bg-rose-500" :
+                "bg-zinc-400";
 
               return (
                 <Card
@@ -106,38 +114,36 @@ export default function Projects() {
                   onClick={() => navigate(`/projects/${project.id}/kanban`)}
                 >
                   {/* Header with gradient */}
-                  <div className={`h-24 bg-gradient-to-br ${project.color} relative`}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => handleDeleteClick(e, project.id)}
-                      className="absolute top-2 right-2 h-8 w-8 bg-background/80 hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                    <div className="absolute -bottom-8 left-6">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${project.color} shadow-xl flex items-center justify-center border-4 border-background`}>
-                        <span className="text-white font-bold text-2xl">
-                          {project.name.charAt(0)}
-                        </span>
+                  <div className={`h-14 bg-gradient-to-br ${project.color} relative border-b border-border/40`}>
+                    <div className="h-full px-6 flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <h3 className="text-base font-semibold text-white line-clamp-1">
+                          {project.name}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs flex items-center gap-1 bg-background/80 backdrop-blur border-border/50">
+                          <span className={`inline-block w-2 h-2 rounded-full ${statusColor}`} />
+                          {project.status}
+                        </Badge>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => handleDeleteClick(e, project.id)}
+                        className="h-8 w-8 bg-background/80 hover:bg-destructive hover:text-destructive-foreground"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
 
-                  <CardContent className="pt-12 pb-6 px-6 space-y-4">
+                  <CardContent className="pt-4 pb-6 px-6 space-y-4">
                     {/* Title and Client */}
                     <div>
-                      <h3 className="text-lg font-bold mb-1 group-hover:text-primary transition-colors line-clamp-1">
-                        {project.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground line-clamp-1">{project.client}</p>
+                      <Badge variant="secondary" className="text-xs">{project.client}</Badge>
                     </div>
 
                     {/* Tags and Status */}
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="text-xs">
-                        {project.status}
-                      </Badge>
                       {project.tags.slice(0, 2).map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
